@@ -1,0 +1,17 @@
+---
+title: "Kendall's tau (non-parametric test)"
+author: "Lasse Hansen"
+date: "10/8/2019"
+output: html_document
+---
+
+Kendall’s tau, τ, is another non-parametric correlation and it should be used rather than Spearman’s coefficient when you have a small data set with a large number of tied ranks. This means that if you rank all of the scores and many scores have the same rank, then Kendall’s tau should be used. Although Spearman’s statistic is the more popular of the two coefficients, there is much to suggest that Kendall’s statistic is actually a better esti- mate of the correlation in the population (see Howell, 1997: 293). As such, we can draw more accurate generalizations from Kendall’s statistic than from Spearman’s. To carry out Kendall’s correlation on the World’s Biggest Liar data simply follow the same steps as for Pearson and Spearman correlations but use method = “kendall”:
+
+```{r}
+cor(liarData$Position, liarData$Creativity, method = "kendall")
+```
+```{r}
+cor.test(liarData$Position, liarData$Creativity, alternative = "less", method = "kendall")
+```
+
+You’ll notice from Output 6.6 that the actual value of the correlation coefficient is closer to zero than the Spearman correlation (it has increased from −.373 to −.300). Despite the difference in the correlation coefficients we can still interpret this result as being a highly significant relationship (because the significance value of .001 is less than .05). However, Kendall’s value is a more accurate gauge of what the correlation in the population would be. As with the Pearson correlation, we cannot assume that creativity caused success in the World’s Best Liar competition.

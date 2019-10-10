@@ -1,0 +1,96 @@
+---
+title: "Repeated measures design"
+author: "Lasse Hansen"
+date: "9/25/2019"
+output: html_document
+---
+
+```{r}
+hiccupsData <- read.delim("Hiccups.dat",  header = TRUE)
+```
+
+Note there are four variables:
+M Baseline: specifies the number of hiccups at baseline.
+M Tongue: specifies the number of hiccups after tongue pulling.
+M Carotid: specifies the number of hiccups after carotid artery massage. M Rectum: specifies the number of hiccups after digital rectal massage.
+
+Each row in the data file represents a different person, so these data are laid out as a repeated-measures design, with each column representing a different treatment condition and every person undergoing each treatment.
+These data are in the wrong format for ggplot2 to use. We need all of the scores stacked up in a single column and then another variable that specifies the type of intervention.
+
+###Rearranging the data
+
+We can rearrange the data as follows (see section 3.9.4):
+
+```{r}
+hiccups<-stack(hiccupsData)
+names(hiccups)<-c("Hiccups","Intervention")
+```
+
+This stacks the data frame into only two rows 
+
+The names() function just assigns names to these new variables in the order that they appear in the dataframe. To plot a categorical variable in ggplot() it needs to be recog- nized as a factor, so we also need to create new variable in the hiccups dataframe called Intervention_Factor, which is just the Intervention variable converted into a factor:
+
+```{r}
+hiccups$Intervention_Factor <- factor(hiccups$Intervention)
+```
+
+We are now ready to plot the graph. As always we first create the plot object and define the variables that we want to plot as aesthetics:
+
+```{r}
+line <- ggplot(hiccups, aes(Intervention_Factor, Hiccups))
+```
+
+I have called the object line, and have created it using the ggplot() function. The function specifies the dataframe to be used (hiccups) and has set Intervention_Factor to be plotted on the x-axis, and Hiccups to be plotted on the y-axis.
+
+###Creating the mean value within each treatment
+
+Just as we did for our bar charts, we are going to use stat_summary() to create the mean values within each treatment condition. Therefore, as with the bar chart, we create a layer using stat_summary() and add this to the plot:
+
+```{r}
+line + stat_summary(fun.y = mean, geom = "point")
+```
+
+Note that this command is exactly the same as for a bar chart, except that we have chosen the point geom rather than a bar. At the moment we have a plot with a symbol representing each group mean. If we want to connect these symbols with a line then we use stat_summary() again, we again specify fun.y to be the mean, but this time choose the line geom. To make the line display we also need to set an aesthetic of group = 1; this is because we are joining summary points (i.e., points that summarize a group) rather than individual data points. Therefore, we specify the line as:
+
+```{r}
+line + stat_summary(fun.y = mean, geom = "line", aes(group = 1))
+```
+
+Now let’s add an error bar to each group mean. We can do this by adding another layer using stat_summary(). When we plotted an error bar on the bar chart we used a normal error bar, so this time let’s add an error bar based on bootstrapping. We set the function for the data to be mean_cl_boot (fun.data = mean_cl_boot) – see Table 4.4 – and set the geom to be errorbar (you could use pointrange as we did for the bar chart if you prefer):
+
+
+```{r}
+line+ stat_summary(fun.data = mean_cl_boot, geom = "errorbar")
+```
+
+###Changing looks of it and adding labels
+
+The default error bars are quite wide, so I recommend setting the width parameter to 0.2 to make them look nicer:
+
+```{r}
+line+ stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2)
+```
+
+You can, of course, also change the colour and other properties of the error bar in the usual way (e.g., by adding colour = “Red” to make them red). Finally, we will add some labels to the x- and y-axes using the labs() function
+
+
+```{r}
+line+ labs(x = "Intervention", y = "Mean Number of Hiccups")
+```
+
+###Full command all together
+
+If we put all of these commands together, we can create the graph by executing the following command:
+
+```{r}
+line <- ggplot(hiccups, aes(Intervention_Factor, Hiccups))
+line + stat_summary(fun.y = mean, geom = "point") + stat_summary(fun.y = mean, geom = "line", aes(group = 1),colour = "Blue", linetype = "dashed") + stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) + labs(x = "Intervention", y = "Mean Number of Hiccups")
+```
+
+
+###Conclusion of results
+
+The resulting graph in Figure 4.28 displays the mean number of hiccups at baseline and after the three interventions (and the confidence intervals of those means based on boot- strapping). As we will see in Chapter 9, the error bars on graphs of repeated-measures designs aren’t corrected for the fact that the data points are dependent; I don’t want to get into the reasons why here because I want to keep things simple, but if you’re doing a graph of your own data then I would read section 9.2 before you do.
+We can conclude that the amount of hiccups after tongue pulling was about the same as at baseline; however, carotid artery massage reduced hiccups, but not by as much as a good old fashioned digital rectal massage. The moral here is: if you have hiccups, find something digital and go amuse yourself for a few minutes.
+
+

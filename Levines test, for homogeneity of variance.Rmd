@@ -1,0 +1,39 @@
+---
+title: "Testing for Homogeneity of variance"
+author: "Lasse Hansen"
+date: "9/24/2019"
+output: html_document
+---
+
+####Levenes test, testing for homogeneity of variance
+
+Levene’s test tests the null hypothesis that the variances in different groups are equal (i.e., the difference between the variances is zero).
+
+###Significance in levenes test
+
+Levene’s test is significant at p ≤ .05 then we can conclude that the null hypothesis is incorrect and that the variances are significantly different – therefore, the assumption of homogeneity of variances has been violated. 
+
+If levenes test is non-significant ( p > .05) then the variances are roughly equal and the assumption
+is tenable.
+
+To use Levene’s test, we use the leveneTest() function from the car package. This function
+takes the general form:
+
+```{r}
+library(car)
+```
+
+```{r}
+leveneTest(outcome variable, group, center = median/mean)
+```
+
+Therefore, we enter two variables into the function: first the outcome variable of which we want to test the variances; and second, the grouping variable, which must be a factor. We can just enter these variables and Levene’s test will centre the variables using the median (which is slightly preferable), but if we want to override this default and centre using the mean then we can add the option center = “mean”. Therefore, for the exam scores we could execute:
+
+```{r}
+leveneTest(rexam$exam, rexam$uni)
+leveneTest(rexam$exam, rexam$uni, center = mean)
+```
+
+###Output data
+
+The result is non-significant for the R exam scores (the value in the Pr (>F) column is more than .05) regardless of whether we centre with the median or mean. This indicates that the variances are not significantly different (i.e., they are similar and the homogeneity of variance assumption is tenable).

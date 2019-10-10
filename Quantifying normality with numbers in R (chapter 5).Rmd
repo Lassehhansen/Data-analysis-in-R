@@ -1,0 +1,64 @@
+---
+title: "Quantifying normality with numbers"
+author: "Lasse Hansen"
+date: "9/24/2019"
+output: html_document
+---
+
+####Having inspected the distribution of hygiene scores visually, we can move on to look at ways to quan- tify the shape of the distributions and to look for outliers. To further explore the distribution of the variables, we can use the describe() function, in the psych package.
+
+```{r}
+dlf <- read.delim("DownloadFestival.dat", header=TRUE)
+
+describe(dlf$day1)
+```
+
+We can also use the stat.desc() function of the pastecs package,4 which takes the general form:
+
+```{r}
+stat.desc(dlf$day1, basic = TRUE, norm = FALSE)
+```
+
+Note that we have specified the variable day1 in the dlf dataframe, asked not to see the basic statistics (basic = FALSE) but asked to see the normality statistics (norm = TRUE).
+We can also use describe() and stat.desc() with more than one variable at the same time, using the cbind() function to combine two or more variables
+
+```{r}
+describe(cbind(dlf$day1, dlf$day2, dlf$day3))
+stat.desc(cbind(dlf$day1, dlf$day2, dlf$day3), basic = FALSE, norm = TRUE)
+```
+##Using this data describtive
+
+We can see that, on average, hygiene scores were 1.77 (out of 4) on day 1 of the festival, but went down to 0.96 and 0.98 on days 2 and 3, respectively. The other important measures for our purposes are the skew and the kurtosis (see section 1.7.1). The values of skew and kurtosis should be zero in a normal distribution. 
+
+
+##If you dont understand the small and big numers:
+
+Think of e−02 as meaning ‘move the decimal place 2 places to the left’, so 9.612 e−02 becomes 0.09612. If the notation read 9.612 e−01, then that would be 0.9612, and if it read 9.612 e−03, that would be 0.009612. Likewise, think of e+02 (notice the minus sign has changed) as meaning ‘move the decimal place 2 places to the right’. So 9.612 e+02 becomes 961.2.
+
+###However, we can easily convert our output using the round() function. This function takes the general form:
+
+```{r}
+round(stat.desc(dlf[, c("day1", "day2", "day3")], basic = FALSE, norm = TRUE), digits = 3)
+
+```
+
+
+
+###If We want to compare out kurtosis and skew with data from another population, we can turn them into z-scores.
+
+These z-scores can be compared against values that you would expect to get by chance alone (i.e., known values for the normal distribution shown in the Appendix). So, an absolute value greater than 1.96 is significant at p < .05, above 2.58 is significant at p < .01, and above 3.29 is significant at p < .001. 
+
+### Large contra small samples
+
+Large samples will give rise to small standard errors and so when sample sizes are big, significant values arise from even small deviations from normality. In smallish samples it’s OK to look for values above 1.96; however, in large samples this criterion should be increased to the 2.58 one and in very large samples, because of the problem of small standard errors that I’ve described, no criterion should be applied. If you have a large sample (200 or more) it is more important to look at the shape of the distribution visually and to look at the value of the skew and kurtosis statistics rather than calculate their significance.
+
+###ATTENTION: The stat.desc() function produces skew.2SE and kurt.2SE, which are the skew and kur- tosis value divided by 2 standard errors.
+
+In other words, if skew.2SE or kurt.2SE are greater than 1 (ignoring the plus or minus sign) then you have significant skew/kurtosis (at p < .05);values greater than 1.29 indicate significance at p < .01, and above 1.65 indicate significance at p < .001.
+
+But only use this in smaller samples
+
+
+
+
+

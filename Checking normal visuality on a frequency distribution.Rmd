@@ -1,0 +1,64 @@
+---
+title: "Cheking normal visuality in graphs"
+author: "Lasse Hansen"
+date: "9/23/2019"
+output: html_document
+---
+
+##Checking it using stat_function
+
+First i will read my data
+
+```{r}
+dlf <- read.delim("DownloadFestival(No Outlier).dat", header=TRUE)
+```
+
+First i will install all packages needed 
+
+```{r}
+install.packages("car"); install.packages("ggplot2");
+install.packages("pastecs"); install.packages("psych")
+```
+
+```{r}
+library(car); library(ggplot2); library(pastecs); library(psych); library(Rcmdr)
+```
+```{r}
+library(Rcmdr)
+```
+
+i will now make a histogram of day 1 
+
+## ggplot(dlf, aes(day1)): This tells R to plot the day1 variable from the dlf dataframe.
+## geom_histogram(aes(y=..density..), colour = “black”, fill=”white”): This command plots the histogram, sets the line colour to be black and the fill colour to be white. Notice that we have asked for a density plot rather than frequency because we want to plot the normal curve.
+# labs(x = “Hygiene score on day 1”, y = “Density”): this command sets the labels for the x- and y-axes.
+
+```{r}
+hist.day1 <- ggplot(dlf, aes(day1)) + geom_histogram(aes(y = ..density..), colour = "black", fill = "white") + labs(x = "Hygiene score on day 1", y = "Density")
+
+hist.day1
+```
+
+#We can add another layer to the chart, which is a normal curve. We need to tell ggplot2 what mean and standard deviation we’d like on that curve though. And what we’d like is the same mean and standard deviation that we have in our data. To add the normal curve, we take the existing histogram object (hist.day1) and add a new layer that uses stat_func- tion() to produce a normal curve and lay it on top of the histogram:
+
+```{r}
+hist.day1 + stat_function(fun = dnorm, args = list(mean = mean(dlf$day1, na.rm = TRUE), sd = sd(dlf$day1, na.rm = TRUE)), colour = "black", size = 1)
+```
+
+#The stat_function() command draws the normal curve using the function dnorm(). This function basically returns the probability (i.e., the density) for a given value from a normal distribution of known mean and standard deviation. 
+#The rest of the command specifies the mean as being the mean of the day1 variable after removing any missing values (mean = mean (dlf$day1, na.rm = TRUE)), and the standard deviation as being that of day1 (), sd = sd(dlf$day1, na.rm = TRUE)). We also set the line colour as black and the line width as 1
+
+
+## Checking normality with Q-Q Plot
+
+#There is another useful graph that we can inspect to see if a distribution is normal called a Q-Q plot (quantile–quantile plot; a quantile is the proportion of cases we find below a certain value). 
+
+#To draw a Q-Q plot using the ggplot2 package, we can use the qplot() function in conjunction with the qq statistic. Execute the following code:
+
+```{r}
+qqplot.day1 <- qplot(sample = dlf$day1,)
+qqplot.day1
+```
+
+
+

@@ -1,0 +1,29 @@
+---
+title: "HIstograms"
+author: "Lasse Hansen"
+date: "9/25/2019"
+output: html_document
+---
+
+```{r}
+festivalData <- read.delim("DownloadFestival.dat", header = TRUE)
+```
+
+To begin with let’s plot the hygiene scores for day 1, which are in the variable day1. Therefore, to specify this variable as an aesthetic we type aes(day1). I have also decided to turn the legend off so I have added opts(legend.position = “none”) to do this (see R’s Souls’ Tip 4.2):
+
+```{r}
+festivalHistogram <- ggplot(festivalData, aes(day1))
+```
+
+Remember that having executed the above command we have an object but no graphi- cal layers, so we will see nothing. To add the graphical layer we need to add the histogram geom to our existing plot:
+
+```{r}
+festivalHistogram + geom_histogram()
+```
+
+We should also provide more informative labels for our axes using the labs() function:
+
+```{r}
+festivalHistogram + geom_histogram() + labs(x = "Hygiene (Day 1 of Festival)", y = "Frequency")
+```
+

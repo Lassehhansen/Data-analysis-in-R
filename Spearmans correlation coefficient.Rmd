@@ -1,0 +1,33 @@
+---
+title: "Spearmans correlation coefficient"
+author: "Lasse Hansen"
+date: "10/8/2019"
+output: html_document
+---
+
+The procedure for doing a Spearman correlation is the same as for a Pearson correlation except that we need to specify that we want a Spearman correlation instead of Pearson, which is done using method = “spearman” for cor() and cor.test(), and type = “spearman” for rcorr(). Let’s load the data into a dataframe and then create a dataframe by executing:
+
+```{r}
+liarData = read.delim("The Biggest Liar.dat",  header = TRUE)
+```
+
+To obtain the correlation coefficient for a pair of variables we can execute:
+
+```{r}
+cor(liarData$Position, liarData$Creativity, method = "spearman")
+```
+
+If we want a significance value for this correlation we could either use rcorr() by executing (remembering that we have to first convert the dataframe to a matrix):
+
+```{r}
+liarMatrix<-as.matrix(liarData[, c("Position", "Creativity")])
+rcorr(liarMatrix)
+```
+
+or simply use cor.test(), which has the advantage that we can set a directional hypothesis. I predicted that more creative people would tell better lies. Doing well in the competition (i.e., telling better lies) actually equates to a lower number for the variable Position (first place = 1, second place = 2 etc.), so we’re predicting a negative relationship. High scores on Creativity should equate to a lower value of Position (because a low value means you did well!). Therefore, we predict that the correlation will be less than zero, and we can reflect this prediction by using alternative = “less” in the command:
+
+```{r}
+cor.test(liarData$Position, liarData$Creativity, alternative = "less", method = "spearman")
+```
+
+Output 6.5 shows the output for a Spearman correlation on the variables Creativity and Position. The output is very similar to that of the Pearson correlation (except that confidence intervals are not produced – if you want one see the section on bootstrapping): the correla- tion coefficient between the two variables is fairly large (−.373), and the significance value of this coefficient is very small (p < .001). The significance value for this correlation coefficient is less than .05; therefore, it can be concluded that there is a significant relationship between creativity scores and how well someone did in the World’s Biggest Liar competition. Note that the relationship is negative: as creativity increased, position decreased. Remember that a low number means that you did well in the competition (a low number such as 1 means you came first, and a high number like 4 means you came fourth). Therefore, our hypothesis is supported: as creativity increased, so did success in the competition.

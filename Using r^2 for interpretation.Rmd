@@ -1,0 +1,36 @@
+---
+title: "Using r^2 for interpretation"
+author: "Lasse Hansen"
+date: "10/8/2019"
+output: html_document
+---
+
+Although we cannot make direct conclusions about causality from a correlation, we can take the correlation coefficient a step further by squaring it. The correlation coefficient squared (known as the coefficient of determination, R2) is a measure of the amount of variability in one variable that is shared by the other. 
+
+For example, we may look at the relationship between exam anxiety and exam performance. Exam performances vary from person to person because of any number of factors (different ability, different levels of preparation and so on). 
+
+If we add up all of this variability (rather like when we calculated the sum of squares in section 2.4.1) then we would have an estimate of how much variability exists in exam performances. 
+
+We can then use R2 to tell us how much of this variability is shared by exam anxiety. These two variables had a correlation of −0.4410 and so the value of R2 will be (−0.4410)2 = 0.194. This value tells us how much of the variability in exam per- formance is shared by exam anxiety.
+
+If we convert this value into a percentage (multiply by 100) we can say that exam anxi- ety shares 19.4% of the variability in exam performance. So, although exam anxiety was highly correlated with exam performance, it can account for only 19.4% of variation in exam scores. To put this value into perspective, this leaves 80.6% of the variability still to be accounted for by other variables.
+
+You’ll often see people write things about R2 that imply causality: they might write ‘the variance in y accounted for by x’, or ‘the variation in one variable explained by the other’. However, although R2 is an extremely useful measure of the substantive importance of an effect, it cannot be used to infer causal relationships. Exam anxiety might well share 19.4% of the variation in exam scores, but it does not necessarily cause this variation.
+
+We can get R to compute the coefficient of determination by remembering that “^2” means ‘squared’ in R-speak. Therefore, for our examData2 dataframe (see earlier) if we execute:
+
+```{r}
+examData2 <- examData[, c("Exam", "Anxiety", "Revise")]
+```
+
+```{r}
+cor(examData2)^2
+```
+If we want this in percentage:
+
+```{r}
+cor(examData2)^2*100
+```
+
+
+

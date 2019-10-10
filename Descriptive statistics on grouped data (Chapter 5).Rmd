@@ -1,0 +1,78 @@
+---
+title: "Descriptive Statistics on grouped data"
+author: "Lasse Hansen"
+date: "9/24/2019"
+output: html_document
+---
+```{r}
+rexam <- read.delim("rexam.dat", header=TRUE)
+```
+
+The variable uni will have loaded in as numbers rather than as text, because that was how it was specified in the data file; therefore, we need to set the variable uni to be a factor by executing:
+
+Here we also group the two unis in the same data frame
+
+```{r}
+rexam$uni<-factor(rexam$uni, levels = c(0:1), labels = c("Duncetown University", "Sussex University"))
+```
+
+Remember that this command takes the variable uni from the rexam dataframe (rexam$uni), specifies the numbers used to code the two universities, 0 and 1 (levels = c(0:1)), and then assigns labels to them so that 0 represents Duncetown University, and 1 represents Sussex University (labels = c(“Duncetown University”, “Sussex University”)).
+
+###If we want to obtain separate descriptive statistics for each of the universities, we can use the by() function.6 The by() function takes the general form:
+
+```{r}
+by(data = dataFrame, INDICES = grouping variable, FUN = a function that you want to apply to the data)
+```
+
+Therefore, to get descriptive statistics for the variable exam for each university separately using describe, we could execute:
+
+```{r}
+by(data = rexam$exam, INDICES = rexam$uni, FUN = describe)
+```
+
+To do the same, but using stat.desc() instead of describe() we could execute:
+
+```{r}
+by(data = rexam$exam, INDICES = rexam$uni, FUN = stat.desc)
+```
+
+In both cases, we can get away with not explicitly using data, INDICES and FUN as long as we order the variables in the order in the functions above; so, these commands have the same effect as those above:
+
+```{r}
+by(rexam$exam, rexam$uni, describe)
+by(rexam$exam, rexam$uni, stat.desc)
+```
+
+Finally, you can include any options for the function you’re using by adding them in at the end; for example, if you’re using stat.desc() you can specify not to have basic statistics and to have normality statistics by including those options:
+
+```{r}
+by(rexam$exam, rexam$uni, stat.desc, basic = FALSE, norm = TRUE)
+```
+
+If we want descriptive statistics for multiple variables, then we can use cbind() (see R’s Souls’ Tip 3.5) to include them within the by() function. For example, to look at the descriptive statistics of both the previous R exam and the numeracy test, we could execute:
+
+```{r}
+Multiple.Variables <- by(cbind(data=rexam$exam,data=rexam$numeracy), rexam$uni, describe)
+```
+
+####Subset function in plots instead of by function
+
+A simple way, to create plots for different groups is to use the subset() function, which we came across in Chapter 3, to create an object containing only the data in which we’re interested. For example, if we wanted to create separate histograms for the Duncetown and Sussex Universities then we could create new dataframes that contain data from only one of the two universities. For example, execute:
+
+```{r}
+dunceData<-subset(rexam, rexam$uni=="Duncetown University")
+sussexData<-subset(rexam, rexam$uni=="Sussex University")
+```
+
+This is a quick and easy way to split groups; however, you need to be careful that the term you specify to select cases (e.g., ‘Duncetown University’) exactly matches (including capital letters and spaces) the labelling in the data set otherwise you’ll end up with an empty data set.
+
+Having seperated our data we can create a plot for each uni:
+
+```{r}
+hist.numeracy.duncetown <- ggplot(dunceData, aes(numeracy)) + geom_histogram(aes(y = ..density..), fill = "white", colour = "black", binwidth = 1) + labs(x = "Numeracy Score", y = "Density") + stat_function(fun=dnorm, args=list(mean = mean(dunceData$numeracy, na.rm = TRUE), sd = sd(dunceData$numeracy, na.rm = TRUE)), colour = "blue", size=1)
+hist.numeracy.duncetown
+
+```
+
+
+

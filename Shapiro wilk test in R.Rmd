@@ -1,0 +1,48 @@
+---
+title: "Testing if a distribution is normal"
+author: "Lasse Hansen"
+date: "9/24/2019"
+output: html_document
+---
+####The Shapiro wilk test
+
+If the test is non-significant (p > .05) it tells us that the distribution of the sample is not significantly different from a normal distribution. If, however, the test is significant (p < .05) then the distribution in question is significantly differ- ent from a normal distribution (i.e., it is non-normal).
+
+###Limitations of the test 
+
+However, it has limitations because with large sample sizes it is very easy to get significant results from small deviations from normality, and so a
+ significant test doesn’t necessarily tell us whether the deviation from normality is enough to bias any statistical procedures that we apply to the data. I guess the take-home message is: by all means use these tests, but plot your data as well and try to make an informed decision about the extent of non-normality.
+ 
+This function takes the general form: 
+
+```{r}
+shapiro.test(variable)
+```
+in which variable is the name of the variable that you’d like to test for normality. Therefore,
+to test the exam and numeracy variables for normality we would execute:
+
+```{r}
+shapiro.test(rexam$exam)
+shapiro.test(rexam$numeracy)
+```
+
+Remember that a significant value (p-value less than .05) indicates a deviation from normality. For both numeracy (p = .005) and R exam scores (p < .001), the Shapiro–Wilk test is highly significant, indicating that both distributions are not normal. 
+
+Now if we’d asked for separate Shapiro– Wilk tests for the two universities we might have found non-significant results. 
+
+We use the by() function again
+
+```{r}
+by(rexam$exam, rexam$uni, shapiro.test)
+by(rexam$numeracy, rexam$uni, shapiro.test)
+```
+
+This is important because if our analysis involves comparing groups, then what’s important is not the overall distribution but the distribution in each group.
+
+
+###The test statistic for the Shapiro–Wilk test is denoted by W; we can report the results in. Output 5.5 in the following way:
+
+The percentage on the R exam, W = 0.96, p = .005, and the numeracy scores, W =
+0.92, p < .001, were both significantly non-normal.
+
+

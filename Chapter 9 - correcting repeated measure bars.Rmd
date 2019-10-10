@@ -1,0 +1,53 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r}
+install.packages("pacman")
+pacman::p_load()
+```
+
+```{r}
+spiderWide <- read.csv("SpiderWide.dat")
+spiderWide <- data.frame("Participant" = 1:12, "Picture" = c(30,35,45,40,50,35,55,25,30,45,40,50), "Real" = c(40,35,50,55,65,55,50,35,30,50,60,39))
+```
+
+##Calculating the mean of each participant:
+
+To correct the repeated-measures error bars requires several steps, but none of them are particularly difficult. To begin with, we need to calculate the average anxiety for each participant. We’re using the spiderWide dataframe so participants’ scores are stored in two columns, therefore we need to simply add these columns and divide by 2 by executing:
+
+```{r}
+spiderWide$pMean<-(spiderWide$Picture + spiderWide$Real)/2
+```
+
+This command creates a variable called pMean in the dataframe spiderWide, by adding the
+scores for picture and real (from the same dataframe) and dividing by 2.
+
+##Calculating the grand mean of all scores
+
+The grand mean is the mean of all scores (regardless of from which condition the score comes) and so for the current data this value will be the mean of all 24 scores. A fairly simple way to calculate this value is to use the c() function, with which we’re familiar, to combine the picture and real variables into a single variable, and then apply the mean() function to this new variable. We can do this is a single command:
+
+```{r}
+granMean <- mean(c(spiderWide$Picture,spiderWide$Real))
+```
+
+Executing this command creates a variable called grandMean, which is the mean of picture and real combined into a single variable (c(spiderWide$picture, spiderWide$real)); in other words, it’s the mean of all scores.
+
+## Calculate the adjustment error 
+
+As we can see, peoples independent means differ from the grand mean. This means that some people are generally for scared than others. These different in natural anxiety, contaminate the error bar graphs.
+
+Therefore we need to adjust these values.To eliminate this contamination we should equalize the means between participants 
+
+To do this, we need to calculate an adjustment factor by subtracting each participant’s mean score (pMean) from the grand mean (grandMean):
+
+```{r}
+spiderWide$adj<-granMean-spiderWide$pMean
+```
+
+The scores in this column represent the difference between each participant’s mean anxiety and the mean anxiety level across all participants. You’ll notice that some of the values are positive, and these participants are ones who were less anxious than average. Other participants were more anxious than average, and they have negative adjustment scores.
+
+## Create adjusted values for each variable:
+
+

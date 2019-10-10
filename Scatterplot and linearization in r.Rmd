@@ -1,0 +1,87 @@
+---
+title: "Scatterplot"
+author: "Lasse Hansen"
+date: "9/25/2019"
+output: html_document
+---
+
+###How to use scatterplot
+
+```{r}
+examData <- read.delim("Exam Anxiety.dat", header = TRUE)
+```
+
+Plotting the relationsship between x and y axis:
+
+```{r}
+scatter <- ggplot(examData, aes(Anxiety, Exam))
+```
+
+This command creates an object based on the examData dataframe and specifies the aes- thetic mapping of variables to the x- and y-axes. When you execute this command nothing will happen: we have created the object, but there is nothing to print.
+If we want to see something then we need to take our object (scatter) and add a layer containing visual elements. For a scatterplot we essentially want to add dots, which is done using the geom_point() function.
+
+```{r}
+scatter + geom_point()
+```
+
+If we want to add some nice labels to our axes then we can also add a layer with these on using labs():
+
+```{r}
+scatter + geom_point() + labs(x = "Exam Anxiety", y = "Exam
+Performance %")
+```
+
+###How to add a line that follows the data
+
+```{r}
+scatter + geom_point() + geom_smooth() + labs(x = "Exam Anxiety", y = "Exam Performance %")
+```
+The shaded area around the line is the 95% confidence interval around the line. 
+
+###How to make it linear
+
+```{r}
++ geom_smooth(method = "lm")
+```
+
+Putting this together with the code for the simple scatterplot, we would execute:
+
+```{r}
+scatter <- ggplot(examData, aes(Anxiety, Exam))
+scatter + geom_point() + geom_smooth(method = "lm", colour = "Red")+ labs(x = "Exam Anxiety", y = "Exam Performance %")
+```
+
+If we dont want to se the 95% confidence interval just add:
+
+```{r}
++ geom_smooth(method = "lm", se = F)
+```
+
+###Grouped scatterplot 
+
+What if we want to see whether male and female students had different reactions to exam anxiety? To do this, we need to set Gender as an aesthetic. This is fairly straightforward. First, we define gender as a colour aesthetic when we initiate the plot object:
+
+```{r}
+scatter <- ggplot(examData, aes(Anxiety, Exam, colour = Gender))
+```
+
+Note that this command is exactly the same as the previous example, except that we have added ‘colour = Gender’ so that any geoms we define will be coloured differently for men and women. Therefore, if we then execute:
+
+```{r}
+scatter <- ggplot(examData, aes(Anxiety, Exam, colour = Gender)) + geom_smooth(method = "lm")
+scatter
+```
+
+We would have a scatterplot with different coloured dots and regression lines for men and women. It’s as simple as that. However, our lines would have confidence intervals and both intervals would be shaded grey, so we could be a little more sophisticated and add some instructions into geom_smooth() that tells it to also colour the confidence intervals accord- ing to the Gender variable:
+
+```{r}
+scatter+ geom_smooth(method = "lm", aes(fill = Gender), alpha = 0.1)
+```
+
+Adding geompoints to it 
+
+```{r}
+scatter + geom_point() + geom_smooth(method = "lm", aes(fill = Gender), alpha = 0.1) + labs(x = "Exam Anxiety", y = "Exam Performance %", colour = "Gender")
+```
+
+The regression lines tell us that the relation- ship between exam anxiety and exam performance was slightly stronger in males (the line is steeper) indicating that men’s exam performance was more adversely affected by anxiety than women’s exam anxiety. (Whether this difference is significant is another issue – see section 6.7.1.)

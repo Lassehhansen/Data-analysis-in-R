@@ -1,0 +1,24 @@
+---
+title: "Boxplot"
+author: "Lasse Hansen"
+date: "9/25/2019"
+output: html_document
+---
+
+###Creating a boxplot
+
+The simplest way to do this is just to specify Gender as the variable to be plotted on the x-axis, and the hygiene scores (day1) to be the variable plotted on the y-axis. As such, when we initiate our plot object rather than set a single variable as an aesthetic as we did for the histogram (aes(day1)), we set Gender and day1 as variables (aes(Gender, day1)). Having initiated the plot object (I’ve called it festivalBoxplot), we can simply add the boxplot geom as a layer (+ geom_boxplot()) and add some axis labels with the labs() function as we did when we created a histogram. To see the graph we therefore simply execute these two lines of code:
+
+```{r}
+festivalBoxplot <- ggplot(festivalData, aes(gender, day1))
+festivalBoxplot + geom_boxplot() + labs(x = "Gender", y = "Hygiene (Day 1 of Festival)")
+```
+
+The resulting boxplot is shown in Figure 4.19. It shows a separate boxplot for the men and women in the data. Note that the outlier that we detected in the histogram is shown up as a point on the boxplot (we can also tell that this case was a female). An outlier is an extreme score, so the easiest way to find it is to sort the data:
+
+```{r}
+festivalData<-festivalData[order(festivalData$day1),]
+festivalBoxplot + geom_boxplot() + labs(x = "Gender", y = "Hygiene (Day 1 of Festival)")
+
+```
+

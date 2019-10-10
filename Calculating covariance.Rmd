@@ -1,0 +1,83 @@
+---
+title: "Calculating covariance"
+author: "Lasse Hansen"
+date: "10/9/2019"
+output: html_document
+---
+
+Making the data frame 
+
+```{r}
+library(ggplot2)
+Sarah <- c(1.95,1.58,1.70,2.46,2.27,2.62,3.32,3.51,3.89,3.41)
+Mother <- c(3.21,4.04,3.30,3.85,4.13,4.59,4.11,4.29,5.82,5.14)
+
+MLUScores <- data.frame(Sarah,Mother)
+```
+
+Calculating the covariance:
+
+
+```{r}
+MLUScores$covariance <- sum((Sarah-mean(Sarah))*(Mother-mean(Mother))/(nrow(MLUScores)-1))
+
+```
+
+Can also be done with a function:
+
+```{r}
+cov(Sarah,Mother)
+```
+
+Afterwards i can calculate the corralation coefficient
+
+```{r}
+MLUScores$CorrelationCoefficient <- (MLUScores$covariance)/(sd(Sarah)*sd(Mother))
+```
+
+Visual representation of this 
+
+```{r}
+ggplot(MLUScores, aes(Sarah,Mother)) + geom_point() + geom_smooth(method = "lm")
+```
+
+The standard correlation as a function:
+
+```{r}
+cor.test(Sarah,Mother)
+```
+
+Normally distributed data 
+
+The p-value :
+
+Shapiro wilk test: is data different from normal distribution?
+
+p<0.05, yes it is different.
+
+Pearsons test:
+
+if:
+
+p<0.05 yes it has correlation 
+
+
+5% propability if the null hypothesis is true
+
+
+Non-normal distributed data:
+
+Spearman:
+
+Ranks data and then applies pearsons equation
+
+Kendalls tau:
+
+Better for smaller samples
+
+
+```{r}
+cor.test(Sarah,Mother)
+```
+
+

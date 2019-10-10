@@ -1,0 +1,72 @@
+---
+title: "Data transformation in R"
+author: "Lasse Hansen"
+date: "9/25/2019"
+output: html_document
+---
+
+###Log Transformation
+
+Now we’ve found out some basic information about the how to compute variables, let’s use it to transform our data. To transform the variable day1, and create a new variable logday1, we execute this command:
+
+```{r}
+dlf$logday1 <- log(dlf$day1)
+```
+
+This command creates a variable called logday1 in the dlf dataframe, which contains values that are the natural log of the values in the variable day1.
+
+For the day 2 hygiene scores there is a value of 0 in the original data, and there is no logarithm of the value 0. To overcome this we should add a constant to our original scores before we take the log of those scores. Any constant will do, provided that it makes all of the scores greater than 0. In this case our lowest score is 0 in the data set so we can simply add 1 to all of the scores and that will ensure that all scores are greater than zero.
+
+The advantage of adding 1 is that the logarithm of 1 is equal to 0, so people who scored a zero before the transformation score a zero after the transformation. To do this transfor- mation we would execute:
+
+```{r}
+dlf$logday1 <- log(dlf$day1 + 1)
+```
+
+This command creates a variable called logday1 in the dlf dataframe, which contains values that are the natural log of the values in the variable day1 after 1 has been added to them.
+
+###The Square Root transformation
+
+To do a square root transformation, we run through the same process, by using a name such as sqrtday1. Therefore, to create a variable called sqrtday1 that contains the square root of the values in the variable day1, we would execute:
+
+```{r}
+dlf$sqrtday1 <- sqrt(dlf$day1)
+```
+
+###The reciprocal transformation in R
+
+To do a reciprocal transformation on the data from day 1, we don’t use a function, we use an arithmetic expression: 
+
+1/variable. 
+
+However, the day 2 data contain a zero value and if we try to divide 1 by 0 then we’ll get an error message (you can’t divide by 0). As such we need to add a constant to our variable just as we did for the log transformation. Any constant will do, but 1 is a convenient number for these data. We could use a name such as recday1, and to create this variable we would execute:
+
+```{r}
+dlf$recday1 <- 1/(dlf$day1 + 1)
+```
+
+
+###The ifelse() function as a way of removing outliers
+
+The ifelse() function is used to create a new variable, or change an old variable, depending
+on some other values. This function takes the general form:
+
+```{r}
+ifelse(a conditional argument, what happens if the argument is TRUE, what happens if the argument if FALSE)
+```
+
+
+This function needs three arguments: 
+
+- a conditional argument to test
+- what to do if the test is true
+- and what to do if the test is false.
+
+Let’s use the original data where there was an outlier in the day1 hygiene score. We can detect this outlier because we know that the highest score possible on the scale was 4. Therefore, we could set our conditional argument to be dlf$day1 > 4, which means we’re saying ‘if the value of day1 is greater than 4 then ...’. The rest of the function tells it what to do, for example, we might want to set it to missing (NA) if the score is over 4, but keep it as the old score if the score is not over 4. In which case we could execute this command:
+
+```{r}
+dlf$day1NoOutlier <- ifelse(dlf$day1 > 4, NA, dlf$day1)
+```
+
+This command creates a new variable called day1NoOutlier which takes the value NA if day1 is greater than 4, but is the value of day1 if day1 is less than 4.
+
