@@ -1,0 +1,77 @@
+---
+title: "Adjusting data in repeated measures design"
+author: "Lasse Hansen"
+date: "10/28/2019"
+output: html_document
+---
+
+```{r}
+pacman::p_load("ggplot2","pastecs","WRS")
+```
+
+```{r}
+Real <- c(40,35,50,55,65,55,50,35,30,50,60,39)
+Picture <- c(30,35,45,40,50,35,55,25,30,45,40,50)
+Participant <- c(1:12)
+Spider.Data <- data.frame(Participant,Picture,Real)
+```
+
+##Step 1 - Calculating the mean for each participant
+
+To correct the repeated-measures error bars requires several steps, but none of them are particularly difficult. To begin with, we need to calculate the average anxiety for each participant. Participants phobia for spiders are stored in two columns with scores, therefore we need to simply add these columns and divide by 2 by executing:
+
+
+```{r}
+Spider.Data$pMean<-(Spider.Data$Picture + Spider.Data$Real)/2
+```
+
+##Step 2 - Calculating the grand mean
+
+The grand mean is the mean of all scores (regardless of from which condition the score comes) and so for the current data this value will be the mean of all 24 scores. A fairly simple way to calculate this value is to use the c() function, with which we’re familiar, to combine the picture and real variables into a single variable, and then apply the mean() function to this new variable. We can do this is a single command:
+
+```{r}
+grandMean <- mean(c(Spider.Data$Picture, Spider.Data$Real))
+```
+
+The mean of all scores is eternally 43.5.
+
+##Step 3 - Calculate the adjustment error
+
+
+If you look at the variable labelled pMean, you should notice that the values for each participant are different, which tells us that some people had greater anxiety than others did across the conditions. The fact that participants’ mean anxiety scores differ represents individual differences between different people (so it represents the fact that some of the participants are generally more scared of spiders than others). These differences in natural anxiety contaminate the error bar graphs, which is why if we don’t adjust the values that we plot, we will get the same graph as if an independent design had been used. Loftus and Masson (1994) argue that to eliminate this contamination we should equalize the means between participants (i.e., adjust the scores in each condition such that when we take the mean score across conditions, it is the same for all participants). To do this, we need to calculate an adjustment factor by subtracting each participant’s mean score (pMean) from the grand mean (grandMean):
+
+```{r}
+Spider.Data$adjustment <- (grandMean - Spider.Data$pMean)
+```
+
+There is a new variable in the data editor called adjustment. The scores in this column represent the difference between each participant’s mean anxiety and the mean anxiety level across all participants. You’ll notice that some of the values are positive, and these participants are ones who were less anxious than average. Other participants were more anxious than average, and they have negative adjustment scores. We can now use these adjustment values to eliminate the between-subject differences in anxiety.
+
+##Step 4: create adjusted values for each variable
+
+We have now calculated the adjustment error. With this we can create adjusted values for each score. We wills start with the condition 'Picture':
+
+```{r}
+Spider.Data$Adjusted.Picture <- (Spider.Data$Picture+Spider.Data$adjustment)
+```
+
+We can do the same thing for the condition 'Real':
+
+```{r}
+Spider.Data$Adjusted.Real <- (Spider.Data$Real+Spider.Data$adjustment)
+```
+
+We now have the adjusted data in our frame. It is adjusted so as to eliminate any between-subject differences.
+
+####This can be done with a function!!!!
+
+all of these steps can be boiled down to a function called:
+
+```{r}
+rmMeanAdjust(WHATEVER DATAFRAME YOU WANT TO ADJUST)
+```
+
+Remember that it will adjust the first two columns of the dataframe
+so we’re assuming that we’re entering a column dataframe with the scores for the two repeated-measures conditions in each column.
+
+
+
