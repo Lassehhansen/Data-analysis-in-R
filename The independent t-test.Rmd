@@ -107,3 +107,31 @@ The p-value is a little bit different, because the degrees of freedom have been 
 
 The degrees of freedom are a little different. The Welch uses a correction which adjusts the degrees of freedom based on the homogeneity of variance, so rather than 22 degrees of freedom (as we’d expect) we have 21.39 degrees of freedom. This has had the effect of changing the p-value from 0.1068 to 0.107, both of which we would report as 0.107 anyway.
 
+###Calculating the effect size
+
+We can also calculate r (the effect size) using R. The value of t is stored in our model as a variable called statistic[[1]] and the degrees of freedom are stored as parameter[[1]]. (Actually statistic and parameter can contain many things and so the ‘[[1]]’ tells R that we want the first value only.) We can access these values just as we would any other variable, we tell R where to find them (i.e., the name of the model, in this case ind.t.test) and then append a dollar sign and the name of the variable. Therefore, we can create a variable t that contains the value of t by executing:
+
+```{r}
+t <- Ttest.spiderdata$statistic[[1]]
+```
+
+We can similarly create a variable called df containing the degrees of freedom by executing:
+
+```{r}
+df <- Ttest.spiderdata$parameter[[1]]
+```
+
+Now we can calculate the effect size, or r:
+
+```{r}
+r <- sqrt(t^2/(t^2+df))
+```
+
+f you think back to our bench- marks for effect sizes, this represents a medium effect (it is around .3, the threshold for a medium effect). Therefore, even though the effect was non-significant, it still represented a fairly substantial effect.
+
+###Reporting the independent t-test:
+
+On average, participants experienced greater anxiety from real spiders (M = 47.00, SE = 3.18), than from pictures of spiders (M = 40.00, SE = 2.68). This difference was not significant t(21.39) = −1.68, p > .05; however, it did represent a medium-sized effect r = .34.
+
+Note how we’ve reported the means in each group (and standard errors) as before. For the test statistic everything is much the same as before except that I’ve had to report that p was greater than (>) .05 rather than less than (<). Finally, note that I’ve commented on the effect size at the end.
+
