@@ -1,0 +1,109 @@
+---
+title: "The independent t-test"
+author: "Lasse Hansen"
+date: "10/29/2019"
+output: html_document
+---
+
+
+```{r}
+pacman::p_load(ggplot2,WRS2,pastecs)
+```
+
+```{r}
+Group<-gl(2, 12, labels = c( "Picture", "Real Spider"))
+Anxiety<-c(30, 35, 45, 40, 50, 35, 55, 25, 30, 45, 40, 50, 40, 35, 50, 55,
+65, 55, 50, 35, 30, 50, 60, 39)
+Spider.Data <- data.frame(Group, Anxiety)
+```
+
+###Testing for normality first
+
+To get some descriptive statistics for each group we can use the by() function that we encountered in Chapter 5. Remember that this function takes the general form:
+by(variable, group, output)
+
+Here the variable is the thing that you want to summarize (in this case Anxiety)
+Group is the variable that defines the groups by which you want to organize the output (in this case Group), and output is a function that tells R what output you would like to see (the mean). 
+
+If we use the function stat.desc() from the package pastecs then R will output a host of useful descriptive statistics). Therefore, by combining by() and stat.desc(), we can get a table of descriptives for each group in a single line of code:
+
+```{r}
+by(Spider.Data$Anxiety, Spider.Data$Group, stat.desc, basic = FALSE, norm = TRUE)
+```
+
+From this output, we can see that the group who saw the picture of the spider had a mean anxiety of 40, with a standard devia- tion of 9.29. What’s more, the standard error of that group (the standard deviation of the sampling distribution) is 2.68.
+
+Also, the table tells us that the average anxiety level in participants who were shown a real spider was 47, with a standard deviation of 11.03 and a standard error of 3.18 
+
+Also, both normality tests are non-significant (p = .852 for the picture group and p = .621 for the real group) implying that we can probably assume normality of errors in the model.
+
+###Doing the independent t-test
+
+To do a t-test we use the function t.test(). There are two different ways that you can use this function and it depends on whether your group data are in a single column (as i have entered it in now) 
+
+Or if they are in two different columns. If you have the data for different groups stored in a single column, then the t.test() function is used like the lm() function:
+
+```{r}
+newModel<-t.test(outcome ~ predictor, data = dataFrame, paired = FALSE/TRUE)
+```
+
+newModel = object created, that contains information about the model.
+outcome = variable that contains the scores for the outcome measure (Anxiety here)
+predictor = variable that tells us to which group a score belongs (Group)
+dataFrame = Ofc, the name of the dataframe
+paired = Whether or not you want to do a paired/independent t-test. Can be left out if you want them to be independent
+
+If your data is stored in different columns, the function takes this form:
+
+```{r}
+newModel<-t.test(scores group 1, scores group 2, paired = FALSE/TRUE)
+```
+
+Where
+
+Scores group 1 = scores for the first group
+Scores group 2 = Scores containing the scores for the second group.
+
+
+###Additional options for the t-test:
+
+alternative = This option determines whether you’re doing a two-tailed test, and if not the direction of your hypothesis. It has three pos- sible values: the default value is to do a two-tailed test (alternative = “two.sided”, or don’t include the option). If you want to do a one-tailed test then you can specify either alternative = “less” (you predict that the difference between means will be less than zero) or alternative = “greater” (you predict that the difference between means will be greater than zero).
+
+mu = 0: A difference between means of zero is the default null hypothesis, but can be changed. For example, including mu = 3 in the function would test the null hypoth- esis that the difference between means is different to 3.
+
+conf.level = 0.95: This determines the alpha level for the p-value and confidence inter- vals. By default it is 0.95 (for 95% confidence intervals) and usually you’d exclude this option, but if you want to use a different value, say 99%, you could include conf. level = 0.99.
+
+na.action: If you have complete data (as we have here) you can exclude this option, but if you have missing values then it can be useful to use na.action = na.exclude, which will exclude all cases with missing values
+
+
+###Executing the t-test on out data
+
+Executing the t-test when the data is in one long column
+
+```{r}
+Ttest.spiderdata <- t.test(Anxiety ~ Group, data = Spider.Data)
+Ttest.spiderdata
+```
+
+Executing the t-test when the data is in two columns:
+
+```{r}
+Real <- c(40,35,50,55,65,55,50,35,30,50,60,39)
+Picture1 <- c(30,35,45,40,50,35,55,25,30,45,40,50)
+Participant <- c(1:12)
+Spider.Data1 <- data.frame(Participant,Picture1,Real)
+```
+
+```{r}
+Ttest.Intwocolumns <- t.test(Spider.Data1$Real,Spider.Data1$Picture1)
+Ttest.Intwocolumns
+```
+
+###Output from the independent t-test
+
+First we are given the value for t, the degrees of freedom and the p-value. The p-value is greater than .05, and hence we cannot reject the null hypoth- esis of no difference between the groups.
+
+The p-value is a little bit different, because the degrees of freedom have been adjusted to correct for heteroscedasticity.
+
+The degrees of freedom are a little different. The Welch uses a correction which adjusts the degrees of freedom based on the homogeneity of variance, so rather than 22 degrees of freedom (as we’d expect) we have 21.39 degrees of freedom. This has had the effect of changing the p-value from 0.1068 to 0.107, both of which we would report as 0.107 anyway.
+
