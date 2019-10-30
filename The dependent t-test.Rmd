@@ -1,0 +1,89 @@
+---
+title: "The dependent t-test"
+author: "Lasse Hansen"
+date: "10/30/2019"
+output: html_document
+---
+
+```{r}
+install.packages(c("MASS", "akima", "robustbase"))
+install.packages(c("cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "parallel", "mc2d", "psych", "Rfit"))
+install.packages("WRS", repos="http://R-Forge.R-project.org", type="source")
+
+```
+
+
+```{r}
+pacman::p_load(tidyverse, ggplot, pastecs, WRS)
+
+```
+
+```{r}
+picture<-c(30, 35, 45, 40, 50, 35, 55, 25, 30, 45, 40, 50)
+real<-c(40, 35, 50, 55, 65, 55, 50, 35, 30, 50, 60, 39)
+
+Spider.Data <- data.frame(picture,real)
+
+```
+
+Checking for normality
+
+```{r}
+stat.desc(Spider.Data, basic = FALSE, norm = TRUE)
+```
+
+Yes the data looks normal, it would be optimal to visualise it with a ggplot.
+
+In this case we have scores from different groups stored in different
+columns, so we could execute paired = TRUE:
+
+```{r}
+Dependent.Ttest <- t.test(Spider.Data$real, Spider.Data$picture, paired =  TRUE)
+Dependent.Ttest
+```
+
+##Explaining  the results
+
+The size of t is compared against known values based on the degrees of freedom. When the same participants have been used, the degrees of freedom are simply the sample size minus 1 (df = N −1 = 11) – you should check this value is what you expect it to be, to ensure you haven’t made a mistake. R uses the degrees of freedom to calculate the exact probability that a value of t as big as the one obtained could occur if the null hypothesis were true (i.e., there was no difference between these means).
+
+The probability for the spider data is very low (p = .031) and in fact it tells us that there is only a 3.1% chance that a value of t this big could happen if the null hypothesis were true. We generally accept a 
+p < .05 as statistically meaningful; therefore, this t is significant because .031 is smaller than .05.
+
+The fact that the t-value is a positive number tells us that the first condition (the real condition) had a larger mean than the second (the picture condition) and so the real spider led to greater anxiety than the picture. Therefore, we can conclude that exposure to a real spider caused significantly more reported anxiety in arachnophobes than exposure to a picture, t(11) = 2.47, p < .05.
+
+
+###Robust measures to compare dependent means
+
+The first robust function, yuend(), is based on a trimmed mean. It takes the general form:
+
+yuend(scores group 1, scores group 2, tr = .2, alpha = .05)
+
+As such, for a test of dependent means based on 20% trimming we simply execute:
+
+```{r}
+yuend(Spider.Data$real,Spider.Data$picture, tr = .2, alpha = .05)
+```
+
+Based on this robust test there is not a significant difference in anxiety scores across the two spider groups, Ty(7) = 1.86, p = .106.
+
+
+###Calculating the effect size
+
+Even though our t-statistic is statistically significant, this doesn’t mean our effect is important in practical terms. To find out if the effect is substansive we use our knowledge on effect sizes:
+
+```{r}
+t <- Dependent.Ttest$statistic[[1]]
+df <- Dependent.Ttest$parameter[[1]]
+r <- sqrt(t^2/(t^2+df))
+round(r,  3)
+```
+
+This represents a very large effect according to the threshold for a large effect. Therefore, as well as being statistically significant, this effect is large and probably substantive finding.
+
+###Reporting  the dependent t-test
+
+In this example the R output tells us that the value of t was 2.47, that this was based on 11 degrees of freedom, and that it was significant at p = .031. We can also see the means for each group. We could write this as:
+
+On average, participants experienced significantly greater anxiety from real spiders (M = 47.00, SE = 3.18) than from pictures of spiders (M = 40.00, SE = 2.68), t(11) = 2.47, p < .05, r = .60.
+
+
