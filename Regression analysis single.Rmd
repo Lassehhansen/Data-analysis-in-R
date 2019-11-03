@@ -1,0 +1,113 @@
+---
+title: "Regression analysis with single independent variables"
+author: "Lasse Hansen"
+date: "11/3/2019"
+output: html_document
+---
+
+###Running a linear regression
+
+```{r}
+pacman::p_load(QuantPsyc, boot)
+```
+
+Loading data
+
+```{r}
+album1 <- read.delim("Album Sales 1.dat")
+```
+
+We run a regression analysis with the function lm(), (linear model). It takes the general form:
+
+```{r}
+modelName <- lm(outcome ~ predictor, data = dataFrame, na.action = an action))
+```
+
+outcome = the variable you are trying the predict (dependent)
+
+Predictor = the variable/variables you are trying to predict from
+
+na.action = If you have missing values it can be used. You can use na.omit or na.exclude, then it will
+exclude any case that has missing values.
+
+you do not need dataframe is you use $ like this:
+
+```{r}
+albumSales.1 <- lm(album1$sales ~ album1$adverts)
+```
+
+###Interpreting a simple regression
+
+We have created an object called albumSales.1 that contains the results of our analysis. We can
+show the object by executing:
+
+```{r}
+summary(albumSales.1)
+```
+
+
+Let’s start at the bottom of the output:
+Multiple R-squared: 0.3346 = R^2
+
+Adjusted R-squared: 0.3313 = Adjusted R^2 for the model that has been derived
+
+We can ofc get R by typing:
+
+```{r}
+sqrt(0.3346)
+```
+
+The value of R2 of .335 also tells us that advertising expenditure can account for 33.5% of the variation in album sales.
+
+This means that 67% of the variation in album sales can- not be explained by advertising alone. Therefore, there must be other variables that have an influence also.
+
+The next part of the output reports the results of an analysis of variance (ANOVA):
+F-statistic: 99.59 on 1 and 198 DF, p-value: < 2.2e-16
+
+It doesn’t give us all of the sums of squares, it just gives the important part: the F-ratio,, and the associated significance value of that F-ratio. For these data, F is 99.59, which is significant at p < .001^4 (because the value labelled p-value is less than .001). This result tells us that there is less than a 0.1% chance that an F-ratio this large would happen if the null hypothesis were true. 
+
+##Coefficients
+
+Intercept = b0, and is 134.1, and this can be interpreted as meaning that
+when no money is spent on advertising (when X = 0), the model predicts
+that 134,100 albums will be sold (remember that our unit of measurement was thousands of albums)
+
+We can also read off the value of b1 from the row labelled adverts and this value represents the gradient of the regression line. It is 0.096.
+
+Our units of measurement were thousands of pounds and thousands of albums sold, so we can say that for an increase in advertising of £1000 the model predicts 96 (0.096 × 1000 = 96) extra album sales.
+
+###How is the t in the output calculated? Use the values in the output to see if you can get the same value as R.
+
+You calculate it by taking the individual intercept value and dividing it with the standard error.
+
+So T for the value of B1:
+
+```{r}
+1.341*10^2/7.537
+```
+
+And for B0:
+
+```{r}
+(9.612*10^-2)/(9.632*10^-3)
+```
+
+
+###How many units would be sold if we spent £666,000 on advertising the latest album by black metal band Abgott?
+
+We take the b-values in the equation with the values from the output. 
+
+Thereby we can make predictions about album sales, by replacing the advertising budget with a value of interest. 
+
+Here we will use the value 666.000, remembering that out units are already in thousands of pounds we can replace the budget with 100:
+
+```{r}
+album.Sales <- 134.14+(0.096*666)
+```
+
+This means that album sales whould be around 198 for the first week of sales if they spent 666.000 on
+advertising.
+
+
+
+
