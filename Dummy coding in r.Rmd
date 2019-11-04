@@ -1,0 +1,67 @@
+---
+title: "Categorical predictors and multiple regression"
+author: "Lasse Hansen"
+date: "11/4/2019"
+output: html_document
+---
+
+
+Often in regression analysis you’ll collect data about groups of people (e.g., ethnic group, gender, socio-economic status, diagnostic category). You might want to include these groups as predictors in the regression model; however, we saw from our assumptions that variables need to be continuous or categorical with only two categories. 
+
+The obvious problem in wanting to use categorical variables as predictors, is that often you'll have more than two categories.
+
+Here you can use dummy coding.
+
+###Dummy coding
+
+This being R, there are several ways to code dummy variables. We’re going to have a look at the contrasts() function, because we will use it time and time again later in the book. First let’s load the data by executing:
+
+```{r}
+gfr <- read.delim("GlastonburyFestivalRegression.dat")
+```
+
+Note that the variable music contains text; therefore, R has intelligently decided to cre- ate this variable as a factor, and treat the levels in alphabetical order (level 1 = crusty, level 2 = indie kid, 3 = metaller, and 4 = no musical affiliation). We can use the contrast() function on this variable to set contrasts because it is a factor. There are several built-in contrasts that we can set, we want to compare all groups to a baseline and therefore we execute:
+
+```{r}
+contrasts(gfr$music)<-contr.treatment(4, base = 4)
+```
+
+The contrasts(gfr$music) simply sets the contrast for the variable music in the gfr dataframe. The contr.treatment() function sets a contrast based on comparing all groups to a baseline.
+
+To set the contrasts manually, because you want to know what contrast 1 is, we create variables that reflect each of the dummy variables:
+
+```{r}
+crusty_v_NMA<-c(1, 0, 0, 0) 
+indie_v_NMA<-c(0, 1, 0, 0) 
+metal_v_NMA<-c(0, 0, 1, 0)
+```
+
+Then we need to bind them to the dummy frame:
+
+```{r}
+contrasts(gfr$music)<-cbind(crusty_v_NMA, indie_v_NMA, metal_v_NMA)
+```
+
+###Regression with dummy variables
+
+Now you’ve created the dummy variables, you can run the regression in the same way as
+for any other kind of regression, by executing:
+
+```{r}
+Model <- lm(change ~ music, data = gfr)
+summary(Model)
+```
+
+The fact that we have set contrasts for the variable music means that the three dummy variables will be entered into the model in a single step. This is one reason why setting contrasts is a useful way to handle categorical predictors
+
+
+ACTUALLY YOU DO NOT HAVE TO DO THE DUMMY CODING BY YOURSELF.
+
+
+###Interpreting the data
+
+R^2 (multiple r-squared) = This shows that by entering the three dummy variables we can explain 7.6% of the variance in the change in hygiene scores
+
+F-statistic = tells us that the model is significantly better at predicting the change in hygiene scores than having no model (or, put another way, the 7.6% of variance that can be explained is a significant amount)
+
+The beta value tells us the change in the outcome due to a unit change in the predictor. In this case, a unit change in the predictor is the change from 0 to 1. As such it shows the shift in the change in hygiene scores that results from the dummy variable changing from 0 to 1. By including all three dummy variables at the same time, our baseline category is always zero, so this actually represents the difference in the change in hygiene scores if a person has no musical affiliation, compared to someone who is a crusty.

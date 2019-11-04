@@ -1,0 +1,87 @@
+---
+title: "Testing assumptions of regression analysis"
+author: "Lasse Hansen"
+date: "11/4/2019"
+output: html_document
+---
+
+```{r}
+install.packages("car")
+install.packages("data.table")
+library(QuantPsyc)
+library(car)
+```
+
+###Assessing the assumption of independence
+
+We can test the assumption of independent errors using the Durbin–Watson test. We can obtain this statistic along with a measure of autocor- relation and a p-value in R using the durbinWatsonTest() or dwt()
+
+```{r}
+dwt(Album.Sales3)
+```
+
+Values less than 1 or greater than 3 should definitely raise alarm bells. The closer to 2 that the value is, the better, and for these data the value is 1.950, which is so close to 2 that the assumption has almost certainly been met. The p-value of .7 confirms this conclusion, it is much bigger than .05 and, therefore, not remotely significant.
+
+
+###Assessing the assumption of no multicollinearity
+
+The VIF and tolerance statistics (with tolerance being 1 divided by the VIF) are useful sta- tistics to assess collinearity. We can obtain the VIF using the vif() function. All we need to do is to specify the model name within the function; so, for example, to get the VIF statistics for the albumSales.3 model, we execute:
+
+```{r}
+vif(Album.Sales3)
+```
+
+The tolerance doesn’t have its own function, but we can calculate it very easily, if we
+remember that tolerance = 1/VIF. Therefore, we can get the values by executing:
+
+```{r}
+1/vif(Album.Sales3)
+```
+
+It can be useful to look at the average VIF too. To calculate the average VIF we can add the VIF values for each predictor and divide by the number of predictors (k):
+
+```{r}
+(1.015+1.043+1.038)/3
+```
+
+Alternatively, we can ask R to do it for us by placing the vif command above into the
+mean() function and executing:
+
+```{r}
+mean(vif(Album.Sales3))
+```
+
+The guidelines for the vif statistics are as follow:
+If the largest VIF is greater than 10 then there is cause for concern. 
+If the average VIF is substantially greater than 1 then the regression may be biased.
+Tolerance below 0.1 indicates a serious problem.
+Tolerance below 0.2 indicates a potential problem.
+
+All vif values are well below 10, and the tolarance are all above 0,2, also the average vif is very close to 1.
+
+
+###Checking assumption about the residuals
+
+As a final stage in the analysis, you should visually check the assumptions that relate to the residuals (or errors). For a basic analysis it is worth plotting the standardized residual (y-axis) against the predicted value (x-axis), because this plot is useful to determine whether the assumptions of random errors and homoscedasticity have been met
+
+The first useful graph is a plot of fitted values against residuals. This should look like a random array of dots evenly dispersed around zero. If this graph funnels out, then the chances are that there is heteroscedasticity in the data. If there is any sort of curve in this graph then the chances are that the data have violated the assumption of linearity.
+
+The model that is produced by lm() is a type of data set, which has variables in it. One of those variables is the predicted (or fitted) values for each case. It’s called fitted.values, and we can refer to it just like we refer to any other variable, by using a $ sign:
+
+```{r}
+plot(album2$standardizedresiduals, Album.Sales3$fitted.values)
+```
+
+###Checking  whether the residuals deviate from a normal distribution
+
+Here we want to inspect the histogram of the residuals:
+
+```{r}
+hist(Album.Sales3$residuals)
+```
+
+```{r}
+hist(rstudent(Album.Sales3))
+```
+
+The model appears, in most senses, to be both accu- rate for the sample and generalizable to the population. Therefore, we could conclude that in our sample advertising budget and airplay are fairly equally important in predicting album sales. Attractiveness of the band is a significant predictor of album sales but is less important than the other two predictors (and probably needs verification because of pos- sible heteroscedasticity). The assumptions seem to have been met and so we can probably assume that this model would generalize to any album being released.
