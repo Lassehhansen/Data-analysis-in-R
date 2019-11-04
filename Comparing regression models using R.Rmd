@@ -1,0 +1,26 @@
+---
+title: "Comparing regression models using R"
+author: "Lasse Hansen"
+date: "11/4/2019"
+output: html_document
+---
+
+To compare regression models using R, we use the annova() function. It takes the general form:
+
+```{r}
+anova(model.1, model.2 .... model.n)
+```
+
+which simply means that we list the models that we want to compare in the order in which we want to compare them. It’s worth noting that we can only compare hierarchical models; that is to say, the second model must contain everything that was in the first model plus something new, and the third model must contain everything in the second model plus something new, and so on. Using this principle, we can compare albumSales.2 with albumSales.3 by executing:
+
+```{r}
+anova(Album.Sales2, Album.Sales3)
+```
+
+Here we can see the value of F for model 2 = 96.44.
+
+We will also look at the value of Pr(>F), which is 2.2e-16 which means 0000000000000002.2.
+
+So we can say that Album.Sales3 significantly improved the fit of the model to the data compared to Album.Sales2, F(2, 196) = 96.44, p < .001
+
+
