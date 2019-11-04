@@ -1,0 +1,109 @@
+---
+title: "Testing the accuracy of your regression model"
+author: "Lasse Hansen"
+date: "11/4/2019"
+output: html_document
+---
+
+###Removing outliers and influental cases
+
+
+The diagnostics of outliers and infuental cases can be obtained by various functions. In general they take the form of:
+
+function(regressionModel)
+
+Therefor all we need to do is to place the name of our regression model. Which in this case is Album.Sales3
+
+Thereafter we need to choose a function according to what we want to find.
+
+These functions are destinguished in whether you want to find Outliers or Influental cases:
+
+Outliers:
+
+Residuals = resid()
+Standardized residuals = rstandard()
+function and studentized residuals = rstudent()
+
+Influential cases:
+
+Cooks = cooks.distance()
+DfBeta = dfbeta()
+DFFit = dffits()
+hat values = hatvalues()
+Covariance ratio = covratio()
+
+So we want to make a variable in our dataframe for these functions. Because it will be a long list of numbers.
+We create the variable by specifying a name for it and appending this to the name of the dataframe to which we want to add it, then on the right-hand side of the command we specify what the variable contains. Therefore, to create a variable in our album2 dataframe that contains the residuals for each case, we would execute:
+
+```{r}
+album2$residuals <- resid(Album.Sales3)
+album2$standardizedresiduals <- rstandard(Album.Sales3)
+album2$CooksDistance <- cooks.distance(Album.Sales3)
+album2$hatvalues <- hatvalues(Album.Sales3)
+album2$covratio <- covratio(Album.Sales3)
+```
+
+First i will look at the standardized residuals, we expect 95% of cases to have standardized residuals within about +-2. We have a sample of 200, which means we would expect 10 cases to have standardized residuals.
+
+So to check for which ases the residuals is less than -2 or greater than 2, and to save whether or not these are within the range we can execute:
+
+```{r}
+album2$largeresiduals <- album2$standardizedresiduals > 2 | album2$standardizedresiduals < -2
+```
+
+To use this new made variable we have to remember that R stres 'TRUE' as 1 and 'FALSE' as 0. 
+
+To get the sum of the variable largeresiduals we can use the sum() function, this will be the number of cases with a large residual.
+
+```{r}
+sum(album2$largeresiduals)
+```
+
+This means that 12 cases had a large residual (which we defined as one bigger than 2 or smaller than -2).
+
+If we set rows to be album2$large.residual, then we will see only those rows for which large.residual is TRUE. If we don’t want to see all of the columns, we could also list the columns that we do want to see by providing a list of variable names. For example, if we execute:
+
+```{r}
+album2[album2$largeresiduals, c("sales", "airplay", "attract", "adverts", "standardizedresiduals")]
+```
+
+We will see the variables (or columns) labelled sales, airplay, attract, adverts and standard- ized.residuals but only for cases for which large.residual is TRUE.
+
+This means that 12 cases (6%) of the cases are outside the limit: therefore out samples are within 1% of what we would expect.
+
+In addition 99% of cases should lie between within +-2.5. It is clear from the cases that two cases (1%) lies outside the limits. Which means our cases conform what seems to be a fair model.
+
+It seems that it is only case 169, that is over has a standardized residual over 3, which gives us reason to investigate it more. 
+
+###Investigating a single case
+
+One useful strat- egy is to use the casewise diagnostics to identify cases that you want to investigate further. Let’s continue to look at the diagnostics for the cases of interest. Let’s look now at the leverage (hat value), Cook’s distance and covariance ratio for these 12 cases that have large residuals. We can do this by using the same command as before, but listing different vari- ables (columns) in the data set:
+
+```{r}
+album2[album2$largeresiduals, c("CooksDistance", "hatvalues", "covratio")]
+```
+
+##Hatvalues 
+
+None of the cases has a Cooks distance greater than 1 (even case 169), which means none of the cases is having an undue influence on the model. 
+
+The average leverage can be calculated by saying (k+1/n):
+
+```{r}
+(4/200)
+```
+
+Which means we are looking for values either twice as large 0.04 og 3 times as large 0.06, depending on which statistician you trust. All cases are within the boundary of three times the average and only case 1 is close to two times the average.
+
+
+##Covariance 
+
+There is also a column for the covariance ratio. We saw in section 7.7.1.2 that we need to use the following criteria:
+
+Covariance >1+[3(k+1)/n]=1+[3(3+1)/200] = 1.06
+
+Covariance < 1 − [3(k + 1)/n] = 1 − [3(3 + 1)/200] = 0.94.
+
+Which means we are looking for cases that deviates substantially from these boundaries
+
+The only case that causes concern is case 169 (again) whose CVR is some way below the bottom limit. However, given the Cook’s distance for this case, there is probably little cause for alarm.
