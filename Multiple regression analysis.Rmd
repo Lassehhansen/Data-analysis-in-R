@@ -1,0 +1,83 @@
+---
+title: "Multiple Regression Analysis"
+author: "Lasse Hansen"
+date: "11/3/2019"
+output: html_document
+---
+
+###Multiple regression analysis
+
+Loading files
+
+```{r}
+album2 <- read.delim("Album Sales 2.dat")
+```
+
+As with the single regression analysis i use the function lm()
+
+We need to create two models: the first, albumSales.2, will have adverts as a predictor. The second, albumSales.3, will have adverts, airplay and attract as predictors:
+
+```{r}
+Album.Sales2 <- lm(sales ~ adverts, data = album2)
+```
+
+Now the regression between the two variables have been created.
+
+Therefore i will now do the multiple regression analysis:
+
+```{r}
+Album.Sales3 <- lm(sales ~ adverts + airplay + attract, data = album2)
+```
+
+#Interpreting the results
+
+```{r}
+summary(Album.Sales2)
+summary(Album.Sales3)
+```
+
+##Overall statistics
+
+For the first model its value is .335, which means that advertising budget accounts for 33.5% of the variation in album sales. However, when the other two predictors are included as well, this value increases to .665, or 66.5% of the variance in album sales.
+
+The adjusted R2 gives us some idea of how well our model generalizes, and ideally we would like its value to be the same, or very close to, the value of R2. In this example the difference for the final model is small (in fact the difference between the values is .665 −.660 = .005 (about 0.5%)). This shrinkage means that if the model were derived from the population rather than a sample it would account for approximately 0.5% less variance in the outcome.
+
+
+###Model parameters
+
+
+The b-values, tells us about the relationship between album sales and each predictor. They all had positive relations (positive values)
+
+Standard error of the b-values: the extent to what the values would vary across different samples. The standard error are used to determine whether or not the b-value differs significantly from zero
+
+The t value in multiple regression tells us whether the predictor is making a significant contribution to the model. That means, the smaller Pr(> t) and the larger t value, the bigger the predictor has to the contribution.
+
+
+###Standardized versions of b.values (beta estimates)
+
+To obtain the standardized beta estimates (usually denoted by β) we need to use a function called lm.beta(). This is found in the QuantPsyc package. All we need to do is to specify our model within this function and then execute it. Therefore, to get standardized betas for the albumSales.3 model, we execute:
+
+```{r}
+lm.beta(Album.Sales3)
+```
+
+
+These estimates tell us the number of standard deviations by which the outcome will change as a result of one standard deviation change in the predictor. The standardized beta values are all measured in standard deviation units and so are directly comparable.
+
+For example in adverts, this means that as adverts increase by one standard deviation, sales increase by 0.511 standard deviations. This interpretation is true only if the effects of attractiveness of the band and airplay are held constant.
+
+
+###Looking at confidence intervals
+
+We can make R calculate our confidence intervals using the confint() function:
+
+```{r}
+confint(Album.Sales3)
+```
+The confidence intervals of the unstandardized beta values are boundaries constructed such that in 95% of these samples these boundaries will contain the true value of b. Therefore, if we’d collected 100 samples, and calculated the confidence intervals for b, we are saying that 95% of these confidence intervals would contain the true value of b.
+
+The sign (positive or negative) of the b-values tells us about the direction of the relationship between the predictor and the outcome.
+
+Therefore if the numbers were negative it would be a very bad sign of a predictor.
+
+Adverts and airplay has very low confidence intervals which is goood.
