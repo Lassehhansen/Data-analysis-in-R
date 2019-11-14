@@ -1,0 +1,78 @@
+---
+title: "Post hoc test"
+author: "Lasse Hansen"
+date: "11/14/2019"
+output: html_document
+---
+Packages:
+
+```{r}
+pacman::p_load(compute.es,car,ggplot2,multcomp,pastecs,WRS)
+```
+
+To conduct ANOVA, follow this procedure:
+
+1. Enter data
+2. Explore your data (checking assumptions)
+3. Compute the basic ANOVA (run the main analysis, robust if needed)
+4. Compute contrasts or post hoc tests
+
+###Entering data
+
+The data must be entered in two columns. We are using data on viagra here.
+The grouping variables are coded so that 1 = placebo, 2 = low dose, 3 = high dose:
+
+```{r}
+libido<-c(3,2,1,1,4,5,2,4,2,3,7,4,5,3,6)
+dose<-gl(3,5, labels = c("Placebo", "Low Dose", "High Dose"))
+viagraData<-data.frame(dose, libido)
+```
+
+gl() makes  the dose column a factor variable.
+
+
+###Bonferroni
+
+Takes general form:
+
+```{r}
+pairwise.t.test(outcome, predictor, paired = FALSE, p.adjust.method = "method")
+```
+
+#paired, is a logical statement that by default is FALSE but can be set to TRUE (the capital letters matter). This specifies whether you want paired t-tests or not. For these data we have independent groups so we do not want paired t-tests and the default of FALSE is fine, but we’ll revisit this option in Chapter 13.
+
+#p.adjust.method is a string that specifies which correction you would like to apply to your p-values. You can replace “method” in the command above with “bonferroni”, “holm”, “hochberg”, “hommel”, “BH” (which produces the Benjamini–Hochberg method), “BY” (which produces the more recent Benjamini–Yekutieli method), “fdr” (the general false discovery rate method), and “none” (you don’t correct the p-value at all, you just do lots of t-tests – not advisable).
+
+We can obtain the bonferroni post hoc by executing:
+
+```{r}
+pairwise.t.test(viagraData$libido, viagraData$dose, p.adjust.method = "bonferroni")
+```
+
+the placebo group is compared to the low-dose group and reveals a non-significant difference (.845 is greater than .05), but when compared to the high-dose group there is a significant difference (.025 is less than .05).
+
+###Reporting it
+
+Despite fairly large effect sizes, Bonferroni tests revealed non-significant differences between the low-dose group and both the placebo, p = .845, d = -0.77, and high- dose, p = .196, d = -1.24, groups. The high-dose group, however, had a mean almost 2 standard deviations bigger than the placebo group, p = .025, d = -1.93.
+
+###Robust post hoc tests 
+
+To run a robust hoc test we need wilcox's functions. Input the data in wide format. We are going to use two functions:
+
+lincon(dataframe, tr = .2, grp = c(x, y, ..., z))
+mcppb20(dataframe, tr = .2, nboot = 2000, grp = c(x, y, ..., z))
+
+Note that these functions take the same parameters, except that mcppb20() has an additional nboot command to control the number of bootstrap samples (the default is 2000, which is fine). Trimming on the means defaults to 20% (tr = .2). If you are happy with the default values then we can execute these commands on the viagraWide dataframe as follows:
+
+```{r}
+lincon(viagraData2)
+mcppb20(viagraData2)
+```
+
+In the function "lincon" the confidence intervals are corrected for the number of tests, but the p-values are not. As such, we should ascertain significance from whether or not the confidence intervals cross zero.
+
+
+In the mcpp20, both the confidence intervals and p-values are corrected for the number of tests. The main table lists three contrasts. To make sense of these we have to look at the contrast codes listed under $con.
+
+Looking at the confidence intervals, it’s clear that only the interval for contrast 2 does not cross zero, implying a significance difference between the high dose and placebo group (which is confirmed by the associated p-value, which is smaller than .05). For the other two comparisons the confidence intervals cross zero (and the ps are greater than .05), implying non-significant differences in libido between the low-dose group and both placebo (con- trast 1) and high-dose (contrast 3) groups.
+
