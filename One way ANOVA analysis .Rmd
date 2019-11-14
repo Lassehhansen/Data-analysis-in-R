@@ -1,0 +1,159 @@
+---
+title: "One way ANOVA analysis"
+author: "Lasse Hansen"
+date: "11/13/2019"
+output: html_document
+---
+
+Packages:
+
+```{r}
+pacman::p_load(compute.es,car,ggplot2,multcomp,pastecs,WRS)
+```
+
+To conduct ANOVA, follow this procedure:
+
+1. Enter data
+2. Explore your data (checking assumptions)
+3. Compute the basic ANOVA (run the main analysis, robust if needed)
+4. Compute contrasts or post hoc tests
+
+###Entering data
+
+The data must be entered in two columns. We are using data on viagra here.
+The grouping variables are coded so that 1 = placebo, 2 = low dose, 3 = high dose:
+
+```{r}
+libido<-c(3,2,1,1,4,5,2,4,2,3,7,4,5,3,6)
+dose<-gl(3,5, labels = c("Placebo", "Low Dose", "High Dose"))
+viagraData<-data.frame(dose, libido)
+```
+
+gl() makes  the dose column a factor variable.
+
+###Exploring the data
+
+To get some descriptive statistics for each group we can use the by() function:
+
+```{r}
+by(libido, dose, stat.desc)
+```
+
+The final thing to do before the ANOVA is to compute Levenes test. Where we test if the outcome in libido varies  across groups that received different doses of the drug (dose) we can execute;
+
+```{r}
+leveneTest(viagraData$libido, viagraData$dose, center = median)
+```
+
+The output shows that Levene’s test is very non-significant, F(2, 12) = 0.118, p = .89. This means that for these data the variances are very similar; in fact, the variances of the placebo and low-dose groups are identical. Had this test been significant, we could instead conduct and report the results of Welch’s F or a robust version of ANOVA, which we’ll cover in the next section.
+
+
+###Whent he assumptions are not met
+
+There are two functions that can be used for ANOVA: lm(), and aov(). 
+
+ANOVA is just a special case of the general linear model, therefore, we can use the linear model function, lm(), to run the analysis:
+
+```{r}
+viagraModel <- lm(viagraData$libido ~ viagraData$dose)
+```
+
+Where libido~dose simply creates the model ‘libido predicted from dose’
+
+
+If we want to use the aov(), which is the same as lm(),  although aov() takes the output from lm() and returns it to us in a way that keeps the ANOVA traditional. This means it also takes the same form:
+
+```{r}
+viagraModelAOV <- aov(viagraData$libido ~ viagraData$dose)
+```
+
+Summary stastistics:
+
+```{r}
+summary(viagraModelAOV)
+```
+
+###The output is divided into effects due to the model (the experimental effect):
+
+The effect labelled dose is the overall experimental effect. In this row we are told the sums of squares for the model (SSM = 20.13).
+The degrees of freedom are equal to 2, and the mean squares of value for the model is 10.067. 
+
+The sum of squares and mean squares represent the experimental effect. 
+
+###and residuals (this is the unsystematic variation in the data):
+
+The row labelled Residuals gives details of the unsystematic variation within the data (the variation due to natural individual differences in libido and different reactions to Viagra). The table tells us how much unsystematic variation exists (the residual sum of squares, SSR) = 23.60.
+The table then gives the average amount of unsystematic variation, the mean squares (MS_R) = 1.967
+
+
+The test of whether the group means are the same is represented by the F-ratio for the effect of dose. The value of this ratio is 5.12.
+
+Finally, R tells us whether this value is likely to have happened by chance. The final column labelled Pr(>F) indicates the likelihood of an F-ratio the size of the one obtained occurring if there was no effect in the population.
+
+In this case, there is a probability of .025 that an F-ratio of this size would occur if in reality there was no effect = 2.5% 
+
+Hence, because the observed significance value is less than .05 we can say that there was a significant effect of Viagra. However, at this stage we still do not know exactly what the effect of Viagra was (we don’t know which groups differed)
+
+###The aov()  function automaticly generates some plots that we can use to test assumptions
+
+```{r}
+plot(viagraModelAOV)
+```
+
+	- Plot(model, 1) : Checking linearity
+	- Plot(model, 2): Checking for normality 
+	- Plot(model, 3) : Check homoscedasticity
+  - Plot(model, 4): Check influential cases
+
+###Calculating the effect size:
+
+For some bizarre reason, in the context of ANOVA, r2 is usually called eta squared, η2. It is then a simple matter to take the square root of this value to give us the effect size, r.
+
+However, this measure of effect size is slightly biased because it is based purely on sums of squares from the sample and no adjustment is made for the fact that we’re trying to estimate the effect size in the population. 
+
+###Calculating the effect sizes  for the differences between pairs of groups
+
+Most of the time it isn’t that interesting to have effect sizes for the overall ANOVA because it’s testing a general hypothesis. Instead, we really want effect sizes for the differ- ences between pairs of groups. We can obtain these using the mes() function of the calcu- late.es package. This function takes the general form:
+
+```{r}
+mes(mean_group1, mean_group2, sd_group1, sd_group2, n_group1, n_group2)
+```
+
+We have entered the mean of the placebo group (2.2), the mean of the low-dose group (3.2), the standard deviation of the placebo group (1.3038), the standard deviation of the low-dose group (also 1.3038), and both groups have a sample size of 5. Similarly, we can get effect sizes for the difference between the placebo and high-dose group by executing:
+
+```{r}
+mes(2.2, 5, 1.3038405, 1.5811388, 5, 5)
+```
+
+the difference between the placebo and high-dose group is a very large effect (a difference between the group means of almost 2 standard deviations), d = -1.93, r = –.69; finally, the difference between the low- and high-dose groups is a largish effect (more than a standard deviation difference between the group means), d = -1.24, r = –.53.
+
+###Computing effect sizes  by making  our own function:
+
+Function, taken from the equation:
+
+```{r}
+rcontrast<-function(t, df)
+{r<-sqrt(t^2/(t^2 + df))
+       print(paste("r = ", r))
+       }
+```
+
+Having executed this function, we can use it to calculate r for the contrasts. Output 10.9 gives us the value of t for each contrast (2.474 and 2.029). The degrees of freedom can be calculated as in normal regression (see section 7.2.4) as N – p – 1, in which N is the total sample size (in this case 15), and p is the number of predictors (in this case 2, the two con- trast variables). Therefore, the degrees of freedom are 15 – 2 – 1 = 12. Therefore, we can execute the following commands:
+
+```{r}
+rcontrast(2.474, 12)
+rcontrast(2.029, 12)
+
+```
+
+###Reporting results from a one-way independent ANOVA
+
+When we report an ANOVA, we have to give details of the F-ratio and the degrees of free- dom from which it was calculated. For the experimental effect in these data the F-ratio was derived by dividing the mean squares for the effect by the mean squares for the residual. Therefore, the degrees of freedom used to assess the F-ratio are the degrees of freedom for the effect of the model (dfM = 2) and the degrees of freedom for the residuals of the model (dfR = 12). Therefore, the correct way to report the main finding would be:
+
+There was a significant effect of Viagra on levels of libido, F(2, 12) = 5.12, p < .05, ω = .60.
+
+#Reporting  the linear contrast
+
+Notice that the value of the F-ratio is preceded by the values of the degrees of freedom for that effect. Also, we rarely state the exact significance value of the F-ratio: instead we report that the significance value, p, was less than the criterion value of .05 and include an effect size measure. The linear contrast can be reported in much the same way:
+
+There was a significant linear trend, F(1, 12) = 9.97, p < .01, ω = .62, indicating that as the dose of Viagra increased, libido increased proportionately.
