@@ -1,0 +1,86 @@
+---
+title: "Robust ANOVA"
+author: "Lasse Hansen"
+date: "11/14/2019"
+output: html_document
+---
+Packages:
+
+```{r}
+pacman::p_load(compute.es,car,ggplot2,multcomp,pastecs,WRS)
+```
+
+To conduct ANOVA, follow this procedure:
+
+1. Enter data
+2. Explore your data (checking assumptions)
+3. Compute the basic ANOVA (run the main analysis, robust if needed)
+4. Compute contrasts or post hoc tests
+
+###Entering data
+
+The data must be entered in two columns. We are using data on viagra here.
+The grouping variables are coded so that 1 = placebo, 2 = low dose, 3 = high dose:
+
+```{r}
+libido<-c(3,2,1,1,4,5,2,4,2,3,7,4,5,3,6)
+dose<-gl(3,5, labels = c("Placebo", "Low Dose", "High Dose"))
+viagraData<-data.frame(dose, libido)
+```
+
+gl() makes  the dose column a factor variable.
+
+###Robust ANOVA
+
+We will  use Wilcox functions
+The problem is that they require data to be in wide format.
+
+So we will  convert our data to wide format using unstack():
+
+```{r}
+viagraData2 <- unstack(viagraData, libido ~ dose)
+```
+
+The first robust function, t1way(), is based on a trimmed mean. It takes the general form:
+
+```{r}
+t1way(dataFrame, tr = .2, grp = c(x, y, ..., z))
+```
+
+Where, tr is the proportion of trimming to be done. The default is .2 or 20%, and you need to use this option only if you want to specify an amount other than 20%.
+
+And, grp can be used to specify particular groups by referring to their column in the dataframe; for example, if we wanted to analyse only the placebo and high-dose group, we could do this using grp = c(1,3).
+
+As such, for an ANOVA of the Viagra data based on 20% trimmed means we simply execute:
+
+```{r}
+t1way(viagraData2)
+```
+which shows that, based on this robust test, there is not a significant difference in libido scores across the three dose groups, Ft(2, 7.94) = 4.32, p = .054.
+
+
+Another robust ANOVA is med1way()  that compares medians rather than means:
+
+```{r}
+med1way(viagraData2)
+```
+
+which shows that, based on this robust test, there is not a significant difference in median libido scores across the three dose groups, Fm = 4.78, p = .07.
+
+
+Another method is to add a bootstrap to the trimmed mean method using t1waybt():
+
+```{r}
+t1waybt(dataFrame, tr = .2, alpha = .05, grp = c(x, y, ..., z), nboot = 599)
+```
+
+which is the same as t1way() except that we have two additional options. The first is alpha, which sets the Type I error rate. The default is .05, which is fairly standard, so unless you want something different you don’t need to use this option. The second is nboot, which specifies the number of bootstrap samples to be used. The default is 599, which, if any- thing, you might want to increase (but it’s probably not necessary to use more than 2000). As such, for an ANOVA of the Viagra data based on 20% trimmed means, with 599 boot- strap samples, we execute:
+
+if we wanted, for example, a 5% trimmed mean with 2000 bootstrap samples we would execute:
+
+```{r}
+t1waybt(viagraData2, tr = .05, nboot = 2000)
+```
+
+which shows that, based on this robust test, there is not a significant difference in trimmed mean libido scores across the three dose groups, Ft = 3, p = .089. In short, all three robust methods suggest that dose does not have a significant impact on libido.
+
