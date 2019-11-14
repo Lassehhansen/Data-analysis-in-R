@@ -1,0 +1,48 @@
+---
+title: "When variances are not equal across groups"
+author: "Lasse Hansen"
+date: "11/14/2019"
+output: html_document
+---
+
+
+Packages:
+
+```{r}
+pacman::p_load(compute.es,car,ggplot2,multcomp,pastecs,WRS)
+```
+
+To conduct ANOVA, follow this procedure:
+
+1. Enter data
+2. Explore your data (checking assumptions)
+3. Compute the basic ANOVA (run the main analysis, robust if needed)
+4. Compute contrasts or post hoc tests
+
+###Entering data
+
+The data must be entered in two columns. We are using data on viagra here.
+The grouping variables are coded so that 1 = placebo, 2 = low dose, 3 = high dose:
+
+```{r}
+libido<-c(3,2,1,1,4,5,2,4,2,3,7,4,5,3,6)
+dose<-gl(3,5, labels = c("Placebo", "Low Dose", "High Dose"))
+viagraData<-data.frame(dose, libido)
+```
+
+gl() makes  the dose column a factor variable.
+
+###Levenes test
+
+If Levene’s test is significant then it is reasonable to assume that population variances are different across groups.
+
+###Welch's F
+
+Welch’s F, makes adjustments for differences in group variances. This test is produced by the oneway.test() function, which is built into R. The format of this test is the same as aov():
+
+```{r}
+oneway.test(viagraData$libido ~ viagraData$dose)
+```
+
+Welch’s F(2, 7.94) = 4.23, p = .054, which is just about non-significant. If we were using this test it would imply that the mean libido did not differ significantly across different doses of Viagra.
+
