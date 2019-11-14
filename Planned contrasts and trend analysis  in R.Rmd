@@ -1,0 +1,161 @@
+---
+title: "Planned contrasts using R"
+author: "Lasse Hansen"
+date: "11/14/2019"
+output: html_document
+---
+
+Packages:
+
+```{r}
+pacman::p_load(compute.es,car,ggplot2,multcomp,pastecs,WRS)
+```
+
+To conduct ANOVA, follow this procedure:
+
+1. Enter data
+2. Explore your data (checking assumptions)
+3. Compute the basic ANOVA (run the main analysis, robust if needed)
+4. Compute contrasts or post hoc tests
+
+###Entering data
+
+The data must be entered in two columns. We are using data on viagra here.
+The grouping variables are coded so that 1 = placebo, 2 = low dose, 3 = high dose:
+
+```{r}
+libido<-c(3,2,1,1,4,5,2,4,2,3,7,4,5,3,6)
+dose<-gl(3,5, labels = c("Placebo", "Low Dose", "High Dose"))
+viagraData<-data.frame(dose, libido)
+```
+
+gl() makes  the dose column a factor variable.
+
+Making it a linear model:
+
+```{r}
+viagraModel <- lm(viagraData$libido ~ viagraData$dose)
+```
+
+###The contrast  function
+
+To do planned comparisons in R we have to set the contrast attribute of our grouping vari- able using the contrast() function and then re-create our ANOVA model using aov(). By default, dummy coding is used, which was explained in section 10.2.3. We can see this if we summarize our existing viagraModel using the summary.lm() function rather than sum- mary(). By using summary.lm() we are asking for a summary of the parameters of the linear model (rather than the overall ANOVA):
+
+```{r}
+summary.lm(viagraModel)
+```
+
+The ‘low dose’ effect is the effect of low dose compared to placebo and is non-significant (t = 1.13, p = .282), whereas the effect of high dose compared to the placebo group is significant (t = 3.16, p = .008).
+
+Now if we want to use uor own comparison instad of dummycoding. We do it by resetting the contrast atrribute associated with out predictor variable "dose":
+
+```{r}
+contrasts(predictor  variable) <-  contrast instructions
+```
+
+Here out 'predictor variable' is ofc dose.
+
+The contrast instructions can be either a set of weights for the contrasts that you want to do, or one of the built-in contrasts listed.
+These built in functions can be:
+
+contr.helmert(n)
+contr.poly(n)
+contr.treatment(n, base = x)
+contr.SAS(n)
+
+n = number of groups in  predictor variable 
+The contr.treatment() function has an additional option, base, which allows you to specify the group that you want to use as a baseline. Therefore, if you want dummy coding (i.e., the first category is the baseline) you would use contr.treatment(n, base = 1)
+
+if we wanted to set the contrast property of dose to be a Helmert contrast then we would execute:
+
+```{r}
+contrasts(viagraData$dose) <- contr.helmert(3)
+```
+
+Note that the 3 is the number of groups present in the dose variable. We’re not going to use this contrast, though, we’re going to specify our own.
+
+###Planned contrasts
+
+To conduct planned comparisons we follow the general procedure just described.
+
+We need to rell  R, what weights  to assign to each group. The first step is to decide which comparisons you want to do and then what weights must be assigned to each group for each of the contrasts.
+
+The weights for  contrast 1: control group  =  2, low dose = +1, high dose = +1:
+
+```{r}
+contrast1 <- c(-2,1,1)
+```
+The order of the numbers is important because it corresponds to the order of groups in your predictor variable. The lowest first. (placebo) and so forth
+
+We can do the same for the second contrast:
+
+placebo group = 0, low dose group = -1, high dose group = +1:
+
+```{r}
+contrast2 <- c(0,-1,1)
+```
+
+Having created these variables we now need to bind them together using cbind(), which literally binds two columns of data together, and set them as the contrast attached to our
+predictor variable, dose. We can do this by executing:
+
+```{r}
+contrasts(viagraData$dose) <- cbind(contrast1, contrast2)
+```
+
+the variable now has a contrast attribute that contains the weights that we just specified. 
+
+Once we have set the contrast attribute we create a new model using aov(), in exactly the same way as we did before, by executing:
+
+```{r}
+viagraPlanned <- aov(viagraData$libido ~ viagraData$dose)
+```
+
+To access the contrasts we need the model parameters:
+
+```{r}
+summary.lm(viagraPlanned)
+```
+
+The table gives the standard error of each contrast and a t-statistic. The significance value of the contrast is given in the final column, and this value is two-tailed. 
+
+Provided the means for the groups bear out the hypothesis we can divide the significance values by 2 to obtain the one-tailed probability: .0293/2 = .0147
+
+Hence, for contrast 1, we can say that taking Viagra significantly increased libido compared to the control group (p = .0147). 
+
+For contrast 2 we also had a one-tailed hypothesis (that a high dose of Viagra would increase libido significantly more than a low dose) and the means bear this hypothesis out. The significance of contrast 2 tells us that a high dose of Viagra increased libido significantly more than a low dose (p(one-tailed) = .0652/2 = .0326).
+
+In summary, the planned contrasts revealed that taking Viagra significantly increased libido compared to a control group, t(12) = 2.47, p < .05, and taking a high dose signifi- cantly increased libido compared to a low dose, t(12) = 2.03, p < .05 (one-tailed).
+
+
+###Reporting it  
+
+Planned contrasts revealed that taking any dose of Viagra significantly increased libido compared to having a placebo, t(12) = 2.47, p < .05 (one-tailed), and that tak- ing a high dose significantly increased libido compared to taking a low dose, t(12) = 2.03, p < .05 (one-tailed).
+
+###Trend analysis 
+
+To obtain a trend analysis we follow the general procedure of setting the contrast attri- bute of the predictor variable, which in this case we can do by executing:
+
+```{r}
+contrasts(viagraData$dose) <- contr.poly(3)
+```
+
+The ‘3’ just tells contr.poly() how many groups there are in the predictor variable. Having set the contrast we again create a new model using aov(), by executing:
+
+```{r}
+viagraTrend <- aov(viagraData$libido ~  viagraData$dose)
+```
+
+Summary:
+
+```{r}
+summary.lm(viagraTrend)
+```
+The resulting output breaks down the experimental effect to see whether it can be explained by either a linear (dose.L) or a quadratic (dose.Q) relationship in the data.
+
+For the linear trend t = 3.16 and this value is significant at p = .008. Therefore, we can say that as the dose of Viagra increased from nothing to a low dose to a high dose, libido increased proportionately.
+
+For the qudratic trend. The error bar graph of the data suggests that the means cannot be represented by a curve and the results for the quadratic trend bear this out: t = 0.52 and this value is significant at p = .612, which is not very significant at all.
+
+
+
+
